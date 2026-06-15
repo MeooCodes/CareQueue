@@ -1,0 +1,345 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard - CareQueue</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col md:flex-row">
+
+    <div class="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-slate-200 p-6 flex flex-col justify-between shrink-0">
+        <div class="space-y-6">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🙋‍♂️</span>
+                <span class="text-base font-black text-slate-900 tracking-tight">CareQueue <span class="block text-[10px] text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 w-max mt-1">Patient Portal</span></span>
+            </div>
+
+            <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                <img id="nav-profile-pic" src="{% if user.patient_profile and user.patient_profile.image %}{{ user.patient_profile.image.url }}{% else %}https://api.dicebear.com/7.x/bottts/svg?seed={{ user.username }}{% endif %}" class="w-10 h-10 rounded-full object-cover border border-slate-200">
+                <div class="truncate">
+                    <h4 class="text-xs font-bold text-slate-900 truncate">{% if user.first_name %}{{ user.first_name }}{% else %}{{ user.email|slice:":15" }}{% endif %}</h4>
+                    <span class="text-[9px] text-slate-500 font-medium tracking-wide uppercase">Active User</span>
+                </div>
+            </div>
+
+            <nav class="space-y-1">
+                <button onclick="switchTab('active-booking', this)" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition bg-blue-600 text-white shadow-sm">
+                    🏥 Active Holding
+                </button>
+                <button onclick="switchTab('edit-profile', this)" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition">
+                    👤 Profile Setup
+                </button>
+                <button onclick="switchTab('booking-history', this)" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition">
+                    📜 Booking History
+                </button>
+                <button onclick="switchTab('security', this)" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition">
+                    🔒 Security Settings
+                </button>
+            </nav>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 mt-6 md:mt-0">
+            <a href="{% url 'logout' %}" class="w-full flex items-center justify-center gap-2 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold py-3 px-4 rounded-xl text-xs transition duration-200">
+                🚪 Logout Account
+            </a>
+        </div>
+    </div>
+
+    <main class="flex-1 p-6 sm:p-8 md:max-h-screen overflow-y-auto space-y-8">
+        
+        <div id="active-booking-tab" class="tab-content space-y-6">
+            <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div class="space-y-1">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Welcome Back,</span>
+                    <h1 class="text-2xl font-black text-slate-950 tracking-tight">
+                        {% if user.first_name %}{{ user.first_name }}{% else %}{{ user.email }}{% endif %}
+                    </h1>
+                    <p class="text-xs text-slate-500 font-medium">Email: {{ user.email }}</p>
+                </div>
+                <a href="{% url 'hospital_list' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition shadow-sm">
+                    Find & Reserve Beds
+                </a>
+            </div>
+
+            <div class="space-y-4">
+                <h2 class="text-xs font-black tracking-wider text-slate-400 uppercase">Active Emergency Holding</h2>
+
+                {% if active_reservation %}
+                    <div class="max-w-xl bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 text-white rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative overflow-hidden">
+                        <div class="absolute -top-10 -right-10 w-32 h-32 bg-rose-600/20 rounded-full blur-3xl"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full animate-pulse flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Live Holding Active
+                            </span>
+                            <span class="text-xs text-slate-400 font-mono font-medium">Ticket ID: #CQ-00{{ active_reservation.id }}</span>
+                        </div>
+                        <div class="space-y-2 border-b border-slate-800 pb-5">
+                            <h3 class="text-xl sm:text-2xl font-black tracking-tight text-white">{{ active_reservation.bed_status.hospital.name }}</h3>
+                            <p class="text-sm text-slate-400 font-medium">📍 {{ active_reservation.bed_status.hospital.location }}</p>
+                            <p class="text-sm text-slate-400 font-medium">📞 {{ active_reservation.bed_status.hospital.contact_number }}</p>
+                            <div class="pt-2">
+                                <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/20">
+                                    🛏️ {{ active_reservation.bed_status.bed_type }} Secured
+                                </span>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900/90 border border-slate-800/80 rounded-2xl p-5 text-center space-y-1">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Time Remaining to Reach Hospital</span>
+                            <div id="live-countdown" class="text-3xl sm:text-4xl font-black text-rose-500 tracking-widest font-mono">
+                                --m --s
+                            </div>
+                        </div>
+                        <div id="warning-box" class="hidden bg-rose-950/40 border border-rose-900/50 rounded-2xl p-4 text-rose-200 text-xs font-medium my-4">
+                            <p class="font-bold text-sm text-rose-400 flex items-center gap-1.5 mb-1">⚠️ Hurry Up / সময় শেষ হয়ে আসছে!</p>
+                            <p class="leading-relaxed">নির্ধারিত সময়ের মধ্যে হাসপাতালে পৌঁছানো সম্ভব না হলে, বেডটি ধরে রাখতে এখনই নিচে থেকে সময় বাড়িয়ে নিন।</p>
+                        </div>
+                        <div class="flex flex-col gap-3 pt-2">
+                            <div id="extend-btn-container" class="hidden w-full">
+                                <a href="{% url 'extend_payment' active_reservation.id %}" 
+                                   class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-center py-3.5 rounded-xl text-sm transition shadow-lg shadow-blue-600/20 block tracking-wide">
+                                    ⏳ Extend Time (+30 Mins) / সময় বাড়ান (৳{{ active_reservation.get_extend_fee }})
+                                </a>
+                            </div>
+                            <a href="{% url 'cancel_reservation' active_reservation.id %}" 
+                               onclick="return confirm('আপনি কি নিশ্চিত যে আপনি এই জরুরি বেড হোল্ডটি বাতিল করতে চান?')"
+                               class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-center py-3.5 rounded-xl text-sm transition shadow-lg shadow-rose-600/20 block tracking-wide">
+                                🛑 Cancel Bed Hold /বাতিল করুন
+                            </a>
+                        </div>
+                        <p class="text-[11px] text-slate-400 text-center font-medium leading-relaxed bg-slate-950/40 p-3 rounded-xl border border-slate-800/50">
+                            ⚠️ <strong>জরুরি নির্দেশনা:</strong> কাউন্টডাউন শেষ হওয়ার আগে অবশ্যই হসপিটালে উপস্থিত হোন। ১ ঘণ্টা পার হয়ে গেলে টিকিটটি স্বয়ংক্রিয়ভাবে বাতিল হয়ে যাবে।
+                        </p>
+                    </div>
+                {% else %}
+                    <div class="bg-white border border-slate-200 rounded-3xl p-12 text-center max-w-md mx-auto space-y-4 shadow-sm">
+                        <div class="w-14 h-14 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center mx-auto text-xl">🛡️</div>
+                        <div class="space-y-1">
+                            <h3 class="text-base font-bold text-slate-900">No Active Reservations</h3>
+                            <p class="text-xs text-slate-500 leading-relaxed">You haven't reserved any emergency beds yet. In case of an emergency, find nearby hospitals and hold a bed instantly.</p>
+                        </div>
+                        <a href="{% url 'hospital_list' %}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition shadow-sm">
+                            Browse Hospital Beds Now
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div id="edit-profile-tab" class="tab-content hidden space-y-6 max-w-2xl">
+            <div>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight">Patient Profile Hub</h1>
+                <p class="text-xs text-slate-500 mt-1">হাসপাতালে ভেরিফিকেশনের জন্য আপনার সঠিক মেডিকেল ও ব্যক্তিগত তথ্য সেট করে রাখুন।</p>
+            </div>
+
+            <form id="profile-form" class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Avatar Profile Picture</label>
+                    <div class="flex items-center gap-5 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <img id="profile-preview" src="{% if user.patient_profile and user.patient_profile.image %}{{ user.patient_profile.image.url }}{% else %}https://api.dicebear.com/7.x/bottts/svg?seed={{ user.username }}{% endif %}" class="w-20 h-20 rounded-full border-2 border-white object-cover shadow-md shrink-0">
+                        <div class="space-y-1">
+                            <input type="file" id="profile_image" name="profile_image" accept="image/*" class="text-xs text-slate-500 file:bg-white file:text-slate-700 file:border file:border-slate-200 file:px-3 file:py-1.5 file:rounded-xl file:mr-3 file:cursor-pointer hover:file:bg-slate-50 file:font-semibold transition">
+                            <p class="text-[10px] text-slate-400">Square images format (JPG, PNG) max 2MB.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Blood Group</label>
+                        <select name="blood_group" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:bg-white outline-none transition text-slate-800 font-medium">
+                            <option value="A+" {% if user.patient_profile.blood_group == "A+" %}selected{% endif %}>A+ (Positive)</option>
+                            <option value="A-" {% if user.patient_profile.blood_group == "A-" %}selected{% endif %}>A- (Negative)</option>
+                            <option value="B+" {% if user.patient_profile.blood_group == "B+" %}selected{% endif %}>B+ (Positive)</option>
+                            <option value="B-" {% if user.patient_profile.blood_group == "B-" %}selected{% endif %}>B- (Negative)</option>
+                            <option value="O+" {% if user.patient_profile.blood_group == "O+" %}selected{% endif %}>O+ (Positive)</option>
+                            <option value="O-" {% if user.patient_profile.blood_group == "O-" %}selected{% endif %}>O- (Negative)</option>
+                            <option value="AB+" {% if user.patient_profile.blood_group == "AB+" %}selected{% endif %}>AB+ (Positive)</option>
+                            <option value="AB-" {% if user.patient_profile.blood_group == "AB-" %}selected{% endif %}>AB- (Negative)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Emergency Contact</label>
+                        <input type="text" name="emergency_contact" value="{{ user.patient_profile.emergency_contact|default:'' }}" placeholder="e.g., 017XXXXXXXX" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:bg-white outline-none transition text-slate-800 font-medium">
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Permanent Address</label>
+                    <textarea name="address" rows="3" placeholder="আপনার সম্পূর্ণ স্থায়ী ঠিকানা এখানে লিখুন..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:bg-white outline-none transition text-slate-800 resize-none font-medium">{{ user.patient_profile.address|default:'' }}</textarea>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl text-xs tracking-wide transition shadow-sm uppercase">
+                        💾 Save Profile Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="booking-history-tab" class="tab-content hidden space-y-6">
+            <div>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight">Medical Booking History</h1>
+                <p class="text-xs text-slate-500 mt-1">আপনার অতীতের সমস্ত সফল ও এক্সপায়ার হওয়া ইমার্জেন্সি হসপিটাল টিকিট লগ।</p>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-700">
+                        <thead class="bg-slate-50 text-xs text-slate-400 uppercase font-bold tracking-wider border-b border-slate-200">
+                            <tr>
+                                <th class="p-5">Hospital Name</th>
+                                <th class="p-5">Bed Category</th>
+                                <th class="p-5">Log Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body">
+                            <tr class="border-b border-slate-100 hover:bg-slate-50/50 transition">
+                                <td class="p-5 font-semibold text-slate-900">Square Hospital Ltd.</td>
+                                <td class="p-5 text-xs text-slate-500">ICU Bed (Ventilator)</td>
+                                <td class="p-5">
+                                    <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-500 uppercase">EXPIRED / USED</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="security-tab" class="tab-content hidden space-y-6 max-w-md">
+            <div>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight">Change Security Password</h1>
+                <p class="text-xs text-slate-500 mt-1">নিরাপত্তার স্বার্থে আপনার পাসওয়ার্ড গোপন রাখুন ও সময়ে সময়ে পরিবর্তন করুন।</p>
+            </div>
+
+            <form id="password-form" class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
+                <input type="password" name="old_password" placeholder="Current Password" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:bg-white outline-none transition" required>
+                <input type="password" id="new_password" name="new_password" placeholder="New Password" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:bg-white outline-none transition" required>
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 px-4 rounded-xl text-xs tracking-wide uppercase transition">
+                    🔒 Update Password
+                </button>
+            </form>
+        </div>
+
+    </main>
+
+    <script>
+        // zero reload tab controller
+        function switchTab(tabId, buttonElement) {
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+                btn.classList.add('text-slate-500', 'hover:bg-slate-50', 'hover:text-slate-900');
+            });
+            document.getElementById(`${tabId}-tab`).classList.remove('hidden');
+            buttonElement.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+            buttonElement.classList.remove('text-slate-500', 'hover:bg-slate-50', 'hover:text-slate-900');
+        }
+
+        // client image preview
+        const imgInput = document.getElementById('profile_image');
+        if(imgInput) {
+            imgInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    document.getElementById('profile-preview').src = URL.createObjectURL(file);
+                }
+            });
+        }
+
+        // profile setup (Fetch API)
+        const profileForm = document.getElementById('profile-form');
+        if(profileForm) {
+            profileForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.innerText;
+                
+                submitBtn.disabled = true;
+                submitBtn.innerText = "Saving Changes...";
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+                try {
+                    const response = await fetch('/api/update-profile/', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        if (document.getElementById('nav-profile-pic')) {
+                            document.getElementById('nav-profile-pic').src = data.image_url;
+                        }
+                        alert("✅ " + data.message);
+                    } else {
+                        alert("❌ " + data.message);
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    alert("❌ সার্ভারে সাবমিট করা সম্ভব হয়নি।");
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            });
+        }
+
+        // countdown timer Script
+        {% if active_reservation %}
+            const expiryTimeString = "{{ active_reservation.expires_at.isoformat }}";
+            const expiryTime = new Date(expiryTimeString).getTime();
+
+            const timerInterval = setInterval(function() {
+                const now = new Date().getTime();
+                const distance = expiryTime - now;
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                const display = document.getElementById("live-countdown");
+                
+                if (distance < 0) {
+                    clearInterval(timerInterval);
+                    display.innerText = "EXPIRED";
+                    display.className = "text-3xl sm:text-4xl font-black text-slate-500 tracking-widest font-mono";
+                    setTimeout(() => { window.location.reload(); }, 1000);
+                } else {
+                    const minsStr = minutes < 10 ? '0' + minutes : minutes;
+                    const secsStr = seconds < 10 ? '0' + seconds : seconds;
+                    display.innerText = `${minsStr}m ${secsStr}s`;
+
+                    if (distance <= 5 * 60 * 1000) {
+                        const warningBox = document.getElementById("warning-box");
+                        if (warningBox) warningBox.classList.remove("hidden");
+                        const extendBtnContainer = document.getElementById("extend-btn-container");
+                        if (extendBtnContainer) extendBtnContainer.classList.remove("hidden");
+                    }
+                }
+            }, 1000);
+        {% endif %}
+
+        // Django CSRF Token Handler
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

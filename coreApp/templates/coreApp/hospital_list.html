@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Hospital Beds - CareQueue</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">🚑</span>
+                    <span class="text-lg font-black text-slate-900 tracking-tight">CareQueue <span class="text-rose-600 font-medium text-xs bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100">Live Portal</span></span>
+                </div>
+                <div class="flex items-center gap-4">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard' %}" class="text-sm font-bold text-blue-600 hover:underline">Go to Dashboard</a>
+                        <a href="{% url 'logout' %}" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-xl text-sm transition">Logout</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="text-sm font-bold text-slate-700 hover:underline">Login</a>
+                        <a href="{% url 'user_register' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
+        <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
+            <h1 class="text-xl font-black text-slate-900 tracking-tight">Search Emergency Beds</h1>
+            <form method="GET" action="{% url 'hospital_list' %}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
+                <input type="text" name="search" value="{{ search_query }}" placeholder="Search by Hospital or Location..." class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 text-sm focus:outline-none focus:border-blue-500 h-[48px]">
+                
+                <select name="bed_type" class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 text-sm focus:outline-none focus:border-blue-500 h-[48px]">
+                    <option value="">All Bed Types</option>
+                    <option value="ICU" {% if selected_bed_type == 'ICU' %}selected{% endif %}>ICU</option>
+                    <option value="CCU" {% if selected_bed_type == 'CCU' %}selected{% endif %}>CCU</option>
+                    <option value="General Ward" {% if selected_bed_type == 'General Ward' %}selected{% endif %}>General Ward</option>
+                    <option value="Cabin (Single)" {% if selected_bed_type == 'Cabin (Single)' %}selected{% endif %}>Cabin (Single)</option>
+                </select>
+
+                <select name="sort_by" class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 text-sm focus:outline-none focus:border-blue-500 h-[48px]">
+                    <option value="">Sort By</option>
+                    <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                    <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                    <option value="vacant" {% if sort_by == 'vacant' %}selected{% endif %}>Most Available</option>
+                </select>
+
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition h-[48px] flex items-center justify-center shadow-md shadow-blue-600/10">Apply Filters</button>
+            </form>
+        </div>
+
+        <div class="space-y-4">
+            <h2 class="text-lg font-black text-slate-900 tracking-tight">Available Beds and ICU Status</h2>
+            
+            {% if beds %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for item in beds %} <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col justify-between space-y-5 hover:shadow-md transition-all relative overflow-hidden">
+                            
+                            <div class="space-y-1">
+                                <div class="flex justify-between items-start gap-2">
+                                    <h3 class="text-xl font-black text-slate-950 tracking-tight">{{ item.bed.hospital.name }}</h3>
+                                    
+                                    {% if item.distance != "Unknown" %}
+                                        <span class="shrink-0 text-[11px] font-bold bg-amber-50 text-amber-700 px-2 py-1 rounded-lg border border-amber-200 shadow-sm">
+                                            ⚡ {{ item.distance }} ({{ item.duration }})
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <p class="text-xs text-slate-500 font-medium flex items-center gap-1 mt-1">📍 {{ item.bed.hospital.location }}</p>
+                                <p class="text-xs text-slate-500 font-medium flex items-center gap-1">📞 {{ item.bed.hospital.contact_number }}</p>
+                            </div>
+
+                            <div class="flex justify-between items-end border-t border-b border-slate-100 py-3">
+                                <div>
+                                    <span class="text-[10px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-100">{{ item.bed.bed_type }}</span>
+                                    <p class="text-lg font-black text-slate-900 mt-1.5">৳{{ item.bed.cost_per_day }}<span class="text-xs font-normal text-slate-400">/day</span></p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[10px] font-bold text-slate-400 tracking-wider block mb-0.5">Available / Total</span>
+                                    <p class="text-base font-black text-slate-900">{{ item.bed.available_beds }} <span class="text-slate-300 font-normal">/</span> {{ item.bed.total_beds }}</p>
+                                </div>
+                            </div>
+
+                            <div>
+                                {% if item.bed.available_beds > 0 %}
+                                    <a href="{% url 'checkout_payment' item.bed.id %}" class="w-full bg-rose-600 hover:bg-rose-700 text-white text-center font-bold py-3.5 px-4 rounded-xl text-xs sm:text-sm transition shadow-lg shadow-rose-600/10 active:scale-95 block tracking-wide">
+                                        🚨 Emergency Reserve (1 Hour)
+                                    </a>
+                                {% else %}
+                                    <button disabled class="w-full bg-slate-100 text-slate-400 font-bold py-3.5 px-4 rounded-xl text-xs sm:text-sm cursor-not-allowed block text-center border border-slate-200">
+                                        🚫 No Beds Available
+                                    </button>
+                                {% endif %}
+                            </div>
+
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="bg-white border border-slate-200 rounded-3xl p-12 text-center max-w-md mx-auto space-y-3">
+                    <span class="text-4xl block">🔍</span>
+                    <h3 class="text-lg font-bold text-slate-900">No Beds Found</h3>
+                    <p class="text-sm text-slate-500">Try modifying your search or filters to see available emergency beds.</p>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <script>
+        window.addEventListener('load', () => {
+            if (navigator.geolocation && !window.location.search.includes('lat=')) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    
+                    const urlParams = new URLSearchParams(window.location.search);
+                    urlParams.set('lat', lat);
+                    urlParams.set('lng', lng);
+                    
+                    window.location.search = urlParams.toString();
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>

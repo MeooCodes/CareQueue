@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - CareQueue</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f4f7fc; }
+        .form-card { border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
+    </style>
+</head>
+<body>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <a href="{% url 'dashboard' %}" class="btn btn-link text-secondary mb-3 text-decoration-none p-0">
+                <i class="fa-solid fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+            
+            <div class="card form-card p-4 bg-white">
+                <h3 class="fw-bold text-dark mb-4"><i class="fa-solid fa-door-open text-primary me-2"></i>{{ title }}</h3>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-secondary">Bed Category</label>
+                        <select name="bed_type" class="form-select form-control-lg fs-6" required>
+                            <option value="GENERAL" {% if bed.bed_type == "GENERAL" %}selected{% endif %}>General Bed / Ward</option>
+                            <option value="CABIN_STANDARD" {% if bed.bed_type == "CABIN_STANDARD" %}selected{% endif %}>Single Cabin (Standard)</option>
+                            <option value="CABIN_DELUXE" {% if bed.bed_type == "CABIN_DELUXE" %}selected{% endif %}>Deluxe / Executive Cabin</option>
+                            <option value="ICU" {% if bed.bed_type == "ICU" %}selected{% endif %}>Intensive Care Unit (ICU)</option>
+                            <option value="CCU" {% if bed.bed_type == "CCU" %}selected{% endif %}>Coronary Care Unit (CCU)</option>
+                            <option value="NICU" {% if bed.bed_type == "NICU" %}selected{% endif %}>Neonatal ICU (NICU)</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold text-secondary">Total Beds</label>
+                            <input type="number" name="total_beds" class="form-control" value="{% if bed %}{{ bed.total_beds }}{% else %}10{% endif %}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold text-secondary">Available Beds</label>
+                            <input type="number" name="available_beds" class="form-control" value="{% if bed %}{{ bed.available_beds }}{% else %}10{% endif %}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold text-secondary">Cost Per Day (BDT)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">৳</span>
+                            <input type="number" step="0.01" name="cost_per_day" class="form-control" value="{% if bed %}{{ bed.cost_per_day }}{% else %}1500.00{% endif %}" required>
+                        
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold rounded-3 py-2">
+                            <i class="fa-solid fa-save me-2"></i>Save Configuration
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extend Emergency Reservation - CareQueue</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-slate-950 min-h-screen text-slate-100 flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative overflow-hidden">
+        
+        <div class="absolute -top-10 -left-10 w-32 h-32 bg-blue-600/20 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-emerald-600/15 rounded-full blur-3xl"></div>
+
+        <div class="text-center space-y-2 relative z-10">
+            <div class="w-16 h-16 bg-blue-500/10 border border-blue-500/30 text-blue-400 rounded-2xl flex items-center justify-center mx-auto text-3xl shadow-inner">
+                ⏳
+            </div>
+            <h1 class="text-xl sm:text-2xl font-black tracking-tight text-white">Extend Holding Time</h1>
+            <p class="text-xs text-slate-400">আপনার জরুরি বেড রিজার্ভেশনের সময় আরও ৩০ মিনিট বাড়ান</p>
+        </div>
+
+        <hr class="border-slate-800">
+
+        <div class="bg-slate-950/50 border border-slate-800/80 rounded-2xl p-4 sm:p-5 space-y-3.5">
+            <div class="flex justify-between items-center text-sm">
+                <span class="text-slate-400 font-medium">Hospital Name:</span>
+                <span class="font-bold text-white text-right">{{ reservation.bed_status.hospital.name }}</span>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+                <span class="text-slate-400 font-medium">Secured Bed:</span>
+                <span class="font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 text-xs">
+                    {{ reservation.bed_status.bed_type }}
+                </span>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+                <span class="text-slate-400 font-medium">Extension Time:</span>
+                <span class="font-bold text-blue-400">+30 Minutes</span>
+            </div>
+            
+            <div class="border-t border-dashed border-slate-800 my-2 pt-3 flex justify-between items-center">
+                <span class="text-sm font-bold text-slate-200">Amount to Pay:</span>
+                <span class="text-xl font-black text-white tracking-tight">৳{{ reservation.get_extend_fee }}</span>
+            </div>
+        </div>
+
+        <form method="POST" action="{% url 'extend_payment' reservation.id %}" class="space-y-4">
+    {% csrf_token %}
+    
+    <div class="space-y-2">
+        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-widest block">Select Gateway / পেমেন্ট মাধ্যম</label>
+        <div class="grid grid-cols-2 gap-3">
+            <div class="border-2 border-blue-600 bg-blue-600/5 rounded-xl p-3 flex items-center justify-center gap-2 cursor-pointer transition">
+                <span class="text-lg">📱</span>
+                <span class="text-xs font-bold text-white">bKash / Nagad</span>
+            </div>
+            <div class="border-2 border-emerald-600 bg-emerald-600/5 rounded-xl p-3 flex items-center justify-center gap-2 cursor-pointer transition">
+                <span class="text-lg">💳</span>
+                <span class="text-xs font-bold text-white">Cards (Visa/Master)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex flex-col gap-2.5 pt-2">
+        <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg shadow-blue-600/20 active:scale-[0.98] tracking-wide">
+            ✅ Pay & Secure Extension (৳{{ reservation.get_extend_fee }})
+        </button>
+        
+        <a href="{% url 'dashboard' %}" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-center py-3.5 rounded-xl text-sm transition tracking-wide block">
+            🔙 Back to Dashboard
+        </a>
+    </div>
+</form>
+
+        <p class="text-[10px] text-slate-500 text-center font-medium flex items-center justify-center gap-1">
+            🔒 Secured Emergency Sandbox Payment Gateway
+        </p>
+    </div>
+
+</body>
+</html>

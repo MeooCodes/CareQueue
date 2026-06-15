@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Emergency Payment - CareQueue</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-slate-900 min-h-screen text-slate-100 flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-slate-950 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative overflow-hidden">
+        
+        <div class="absolute -top-10 -left-10 w-32 h-32 bg-blue-600/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-emerald-600/10 rounded-full blur-3xl"></div>
+
+        <div class="text-center space-y-2 border-b border-slate-800/60 pb-5">
+            <span class="text-2xl block">💳</span>
+            <h1 class="text-xl font-black tracking-tight text-white">Emergency Booking Payment</h1>
+            <p class="text-xs text-slate-400">আপনার বেডটি ১ ঘণ্টার জন্য নিশ্চিত করতে বুকিং ফি প্রদান করুন।</p>
+            <div class="inline-block bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-2xl font-black px-5 py-2 rounded-2xl mt-2">
+                ৳{{ fee }} <span class="text-xs font-normal text-slate-400">BDT</span>
+            </div>
+        </div>
+
+        <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 space-y-2">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Selected Option</span>
+            <h3 class="text-base font-bold text-white">{{ bed.hospital.name }}</h3>
+            <div class="flex justify-between items-center text-xs text-slate-400 font-medium">
+                <span>Bed Type: <strong class="text-blue-400">{{ bed.get_bed_type_display }}</strong></span>
+                <span>Location: 📍 {{ bed.hospital.location }}</span>
+            </div>
+        </div>
+
+        <div class="space-y-3">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Select Payment Method</span>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <label class="border-2 border-pink-500/30 bg-pink-500/5 hover:bg-pink-500/10 rounded-xl p-3 flex flex-col items-center justify-center gap-1 cursor-pointer transition relative">
+                    <input type="radio" name="payment_method" checked class="absolute top-2 right-2 accent-pink-500">
+                    <span class="text-xl">🌸</span>
+                    <span class="text-xs font-bold text-pink-400">bKash</span>
+                </label>
+                <label class="border border-slate-800 bg-slate-900/40 hover:bg-slate-900 rounded-xl p-3 flex flex-col items-center justify-center gap-1 cursor-pointer transition relative">
+                    <input type="radio" name="payment_method" class="absolute top-2 right-2 accent-orange-500">
+                    <span class="text-xl">🔥</span>
+                    <span class="text-xs font-bold text-orange-400">Nagad</span>
+                </label>
+            </div>
+        </div>
+
+        <form method="POST" action="{% url 'reserve_bed_view' bed.id %}" enctype="multipart/form-data" class="space-y-5">
+            {% csrf_token %}
+            
+            <div class="space-y-2">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
+                    📸 Upload Medical Proof <span class="text-rose-500">*</span>
+                </label>
+                <input type="file" name="medical_document" required accept="image/*,application/pdf" 
+                       class="w-full text-xs text-slate-400 bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700 cursor-pointer transition">
+                <p class="text-[10px] text-slate-500 leading-normal">
+                    * আপনার সত্যতা প্রমাণের জন্য প্রেসক্রিপশন, ওটি স্লিপ অথবা ডক্টরের আপয়েন্টমেন্ট লেটারের ছবি/পিডিএফ আপলোড করুন।
+                </p>
+            </div>
+
+            <div class="space-y-3 pt-2">
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 px-4 rounded-xl text-sm transition shadow-lg shadow-emerald-600/10 active:scale-[0.98]">
+                    ✅ Confirm & Pay ৳{{ fee }}
+                </button>
+                <a href="{% url 'hospital_list' %}" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-800 font-medium py-3 px-4 rounded-xl text-xs transition block text-center">
+                    ❌ Cancel Payment
+                </a>
+            </div>
+        </form>
+
+        <p class="text-[10px] text-slate-500 text-center font-medium leading-relaxed">
+            🔒 SSL Secured Encrypted Transaction. টাকা কাটার সাথে সাথে আপনার বেডটি সিস্টেম দ্বারা লক করা হবে।
+        </p>
+    </div>
+
+</body>
+</html>

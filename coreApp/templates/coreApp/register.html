@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Registration - CareQueue</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        ul { list-style-type: none; padding-left: 0; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-emerald-50/20 to-slate-100 flex flex-col min-h-screen justify-center items-center p-4 sm:p-6 antialiased">
+
+    <div class="max-w-md w-full bg-white/80 backdrop-blur-md border border-slate-200/60 rounded-3xl p-6 sm:p-10 shadow-xl shadow-slate-200/50 space-y-6">
+        
+        <div class="text-center space-y-2">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-600/10 text-emerald-600 text-xl font-bold mb-1">
+                🏥
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">Hospital Registration</h1>
+            <p class="text-sm text-slate-500 font-medium">Register your hospital authority to manage emergency bed status.</p>
+        </div>
+
+        {% if form.non_field_errors %}
+            <div class="bg-red-50 border border-red-200 text-red-600 p-3.5 rounded-2xl text-xs font-bold space-y-1">
+                {% for error in form.non_field_errors %}
+                    <p>⚠️ {{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST" class="space-y-4">
+            {% csrf_token %}
+            
+            <div class="space-y-3.5 text-sm text-slate-700 font-medium tracking-tight">
+                {% for field in form %}
+                    <div class="flex flex-col space-y-1.5">
+                        
+                        <label class="text-slate-900 font-bold text-xs sm:text-sm tracking-wide flex justify-between items-center">
+                            <span>{{ field.label }}</span>
+                            {% if field.field.required %}
+                                <span class="text-red-500 font-black text-sm" title="This field is required">*</span>
+                            {% else %}
+                                <span class="text-slate-400 text-[10px] font-normal font-sans">(Optional)</span>
+                            {% endif %}
+                        </label>
+                        
+                        <div class="relative [&_input]:w-full [&_input]:border [&_input]:border-slate-200 [&_input]:rounded-2xl [&_input]:px-4 [&_input]:py-2.5 [&_input]:bg-slate-50/50 [&_input]:text-slate-800 [&_input]:focus:outline-none [&_input]:focus:ring-4 [&_input]:focus:ring-emerald-500/10 [&_input]:focus:border-emerald-500 [&_input]:transition-all [&_input]:shadow-inner [&_select]:w-full [&_select]:border [&_select]:border-slate-200 [&_select]:rounded-2xl [&_select]:px-4 [&_select]:py-2.5 [&_select]:bg-slate-50/50">
+                            {{ field }}
+                        </div>
+
+                        {% if field.errors %}
+                            <div class="bg-red-50 border border-red-100 text-red-600 px-3 py-2 rounded-xl text-xs font-semibold space-y-1 mt-1">
+                                {% for error in field.errors %}
+                                    <p class="flex items-center gap-1">❌ {{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        {% if field.help_text and not field.errors %}
+                            <div class="text-[11px] text-slate-400 font-normal leading-relaxed bg-slate-50/80 p-2 rounded-xl border border-slate-100">
+                                {{ field.help_text }}
+                            </div>
+                        {% endif %}
+                        
+                    </div>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-2xl transition-all shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/30 text-sm sm:text-base tracking-wide mt-3">
+                Register Hospital Account
+            </button>
+        </form>
+
+        <div class="text-center text-xs text-slate-500 space-y-3 pt-1">
+            <p class="font-medium">Already have an account? <a href="{% url 'login' %}" class="text-emerald-600 font-bold hover:text-emerald-700 hover:underline transition">Login here</a></p>
+            
+            <div class="relative flex py-1 items-center">
+                <div class="flex-grow border-t border-slate-200/60"></div>
+                <span class="flex-shrink mx-3 text-slate-400 text-[10px] font-bold uppercase tracking-widest">Or</span>
+                <div class="flex-grow border-t border-slate-200/60"></div>
+            </div>
+            
+            <p class="bg-blue-50/60 border border-blue-100/70 rounded-2xl py-2.5 px-4 text-blue-800 font-medium">
+                Are you a general patient? 
+                <a href="{% url 'user_register' %}" class="text-blue-600 font-extrabold hover:text-blue-700 hover:underline transition ml-1">
+                    Register Here &rarr;
+                </a>
+            </p>
+        </div>
+    </div>
+
+</body>
+</html>

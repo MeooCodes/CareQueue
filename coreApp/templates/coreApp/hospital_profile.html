@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ hospital.name }} - Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-slate-50/50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+    <nav class="bg-white border-b border-slate-200/80 shadow-sm px-4">
+        <div class="max-w-5xl mx-auto flex justify-between h-16 items-center">
+            <a href="{% url 'hospital_list' %}" class="flex items-center space-x-2">
+                <span class="text-xl">⚡</span>
+                <span class="text-xl font-extrabold tracking-tight text-slate-900">Care<span class="text-blue-600">Queue</span></span>
+            </a>
+            <a href="{% url 'hospital_list' %}" class="text-sm font-bold text-blue-600 hover:underline">← Back to Directory</a>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl w-full mx-auto px-4 pt-8 pb-16 flex-grow space-y-8">
+        <div class="bg-gradient-to-br from-slate-900 to-blue-950 text-white rounded-3xl p-8 md:p-12 shadow-xl relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 text-white/5 text-9xl font-black select-none">HOSPITAL</div>
+            <div class="max-w-2xl space-y-4">
+                <span class="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">
+                    Verified Medical Facility
+                </span>
+                <h1 class="text-3xl md:text-5xl font-black tracking-tight">{{ hospital.name }}</h1>
+                
+                <div class="flex flex-wrap gap-y-2 gap-x-6 pt-2 text-slate-300 text-sm font-medium">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-base">📍</span> {{ hospital.location|default:"Location not added yet" }}
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-base">📞</span> 
+                        <a href="tel:{{ hospital.contact_number }}" class="hover:text-blue-400 transition underline decoration-blue-500/50">
+                            {{ hospital.contact_number|default:"No contact info" }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Available Care Classifications</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for bed in beds %}
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="bg-slate-100 text-slate-800 text-[11px] font-bold px-2.5 py-1 rounded-lg border border-slate-200">
+                                {{ bed.bed_type }}
+                            </span>
+                            <div class="text-2xl font-black text-slate-900 mt-3 tracking-tight">৳{{ bed.cost_per_day }}</div>
+                            <div class="text-xs text-slate-400 font-medium mt-0.5">Estimated Cost Per Day</div>
+                        </div>
+                        
+                        <div>
+                            {% if bed.available_beds > 0 %}
+                                {% if bed.available_beds <= 2 and bed.bed_type == 'ICU' or bed.available_beds <= 2 and bed.bed_type == 'CCU' %}
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200 animate-pulse">
+                                        Only {{ bed.available_beds }} Left
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        {{ bed.available_beds }} Vacant
+                                    </span>
+                                {% endif %}
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200">
+                                        Full
+                                    </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        <div>Total Baseline Beds: <span class="text-slate-800">{{ bed.total_beds }}</span></div>
+                        <a href="tel:{{ hospital.contact_number }}" class="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-xl transition">
+                            Call to Book
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-span-1 md:col-span-2 bg-white rounded-2xl p-12 text-center border border-slate-200 text-slate-400 font-medium">
+                    This hospital hasn't listed any bed status yet.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400 mt-auto">
+        &copy; 2026 CareQueue. Secure Resource Management System.
+    </footer>
+
+</body>
+</html>
